@@ -27,6 +27,7 @@ struct LayoutAnimation {
   Tag parentTag;
   std::optional<double> opacity;
   LayoutAnimationType type;
+  std::shared_ptr<Serializable> config;
   LayoutAnimation &operator=(const LayoutAnimation &other) = default;
 };
 
@@ -108,6 +109,7 @@ class LayoutAnimationsProxyCommon : public facebook::react::MountingOverrideDele
   void flushLayoutAnimationOperations() const;
 
  protected:
+  virtual void clearSurfaceState() const;
   void transferConfigFromNativeID(const std::string &nativeId, const int tag) const;
   void enqueueLayoutAnimation(ManagedLayoutAnimationStart start) const;
   void enqueueLayoutAnimation(ProgressLayoutAnimationStart start) const;
@@ -119,6 +121,8 @@ class LayoutAnimationsProxyCommon : public facebook::react::MountingOverrideDele
       Tag tag,
       const ShadowView &finalView,
       const std::shared_ptr<Serializable> &config = nullptr) const;
+  std::shared_ptr<Serializable> getRetargetLayoutAnimationConfig(Tag tag) const;
+  bool updateEnteringAnimationTarget(Tag tag, const ShadowView &finalView) const;
   std::optional<ShadowView> reparentLayoutAnimation(Tag tag, Tag parentTag) const;
   void schedulePullOnNextFrame() const;
   void maybeUpdateWindowDimensions(const ShadowViewMutation &mutation) const;
@@ -183,7 +187,8 @@ class LayoutAnimationsProxyCommon : public facebook::react::MountingOverrideDele
       const ShadowView &after,
       Tag parentTag,
       std::optional<double> opacity,
-      LayoutAnimationType type) const;
+      LayoutAnimationType type,
+      const std::shared_ptr<Serializable> &config) const;
 #ifdef ANDROID
   void restoreOpacityInShadowTree(std::vector<OpacityRestoration> restorations) const;
 #endif
