@@ -186,8 +186,13 @@ class LayoutAnimationsProxyCommon : public facebook::react::MountingOverrideDele
   void restoreOpacityInShadowTree(std::vector<OpacityRestoration> restorations) const;
 #endif
 
+  struct PendingLayoutAnimation {
+    LayoutAnimationType type;
+    size_t operationIndex;
+  };
+
   mutable std::deque<LayoutAnimationOperation> layoutAnimationOperations_;
-  mutable std::unordered_map<Tag, std::optional<size_t>> pendingLayoutAnimations_;
+  mutable std::unordered_map<Tag, PendingLayoutAnimation> pendingLayoutAnimations_;
 };
 
 } // namespace reanimated
