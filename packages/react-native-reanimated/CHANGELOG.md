@@ -22,6 +22,7 @@
 - Fix shared element transitions never running on Android for npm installs by publishing `react-native.config.js`, which registers the Shared Transition Boundary component descriptor for autolinking. ([#10375](https://github.com/software-mansion/react-native-reanimated/pull/10375) by [@dennytosp](https://github.com/dennytosp))
 - Keep exiting views at their position in the host tree, so they no longer draw above later siblings. ([#10392](https://github.com/software-mansion/react-native-reanimated/pull/10392) by [@pawicao](https://github.com/pawicao))
 - Fix Layout Animations state leaking between Fabric surfaces by using one proxy per surface. ([#10368](https://github.com/software-mansion/react-native-reanimated/pull/10368) by [@bartlomiejbloniarz](https://github.com/bartlomiejbloniarz))
+- Fix `initialUpdaterRun` leaving `IN_STYLE_UPDATER` set when a style updater throws, which made every later `withTiming`/`withSpring` call on the React Native runtime return its raw target value instead of an animation for the rest of the session. ([#NNNNN](https://github.com/software-mansion/react-native-reanimated/pull/NNNNN) by [@ahmdshrif](https://github.com/ahmdshrif))
 
 ### 💡 Others
 
