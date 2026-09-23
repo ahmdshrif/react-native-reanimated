@@ -30,6 +30,28 @@ describe('web threads implementation', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(error);
   });
 
+  test('flushes the queue in an environment without requestAnimationFrame', async () => {
+    // Static rendering and SSR evaluate the web bundle in Node, which has no
+    // `requestAnimationFrame`.
+    const requestAnimationFrameSpy = jest
+      .spyOn(globalThis, 'requestAnimationFrame')
+      .mockImplementation(undefined as never);
+    // @ts-expect-error The property is not optional in the type definitions.
+    delete globalThis.requestAnimationFrame;
+    const calls: string[] = [];
+
+    try {
+      scheduleOnUI(() => {
+        calls.push('ran');
+      });
+      await waitForUIQueueFlush();
+    } finally {
+      requestAnimationFrameSpy.mockRestore();
+    }
+
+    expect(calls).toEqual(['ran']);
+  });
+
   test('resolves promises returned by runOnUIAsync', async () => {
     await expect(
       runOnUIAsync((a: number, b: number) => a + b, 2, 3)

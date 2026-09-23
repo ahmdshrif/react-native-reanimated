@@ -1,6 +1,7 @@
 'use strict';
 
 import { IS_JEST } from './platformChecker';
+import { mockedRequestAnimationFrame } from './runLoop/uiRuntime/mockedRequestAnimationFrame';
 
 export function scheduleOnUI<Args extends unknown[], ReturnValue>(
   worklet: (...args: Args) => ReturnValue,
@@ -93,7 +94,7 @@ let offset = 0;
 function flushUIQueue(): void {
   const queue = runOnUIQueue;
   runOnUIQueue = [];
-  requestAnimationFrame(() => {
+  requestAnimationFrameImpl(() => {
     offset = 0;
     while (queue.length > offset) {
       try {
@@ -108,6 +109,21 @@ function flushUIQueue(): void {
       }
     }
   });
+}
+
+/**
+ * The web bundle is also evaluated in Node during static rendering and SSR,
+ * where `requestAnimationFrame` does not exist. Fall back to a timer there so
+ * the queue still drains instead of throwing a `ReferenceError`.
+ */
+function requestAnimationFrameImpl(
+  callback: (timestamp: number) => void
+): void {
+  if (globalThis.requestAnimationFrame) {
+    globalThis.requestAnimationFrame(callback);
+  } else {
+    mockedRequestAnimationFrame(callback);
+  }
 }
 
 function drainUIQueue(queue: UIJob[]): void {
