@@ -1,0 +1,1 @@
+Fix the published types of the Jest utilities, which described the web stub: `getAnimatedStyle` returned `void`, the helpers took no arguments, and the `toHaveAnimatedStyle` and `toHaveAnimatedProps` matchers were missing.

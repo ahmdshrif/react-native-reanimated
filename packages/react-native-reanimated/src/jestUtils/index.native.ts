@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-namespace */
 'use strict';
+import './matchers';
 
 import type React from 'react';
 
@@ -11,20 +11,6 @@ import type {
   InitialComponentProps,
 } from '../createAnimatedComponent/commonTypes';
 import type { DefaultStyle } from '../hook/commonTypes';
-
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toHaveAnimatedStyle(
-        style: Record<string, unknown>[] | Record<string, unknown>,
-        config?: {
-          shouldMatchAllProps?: boolean;
-        }
-      ): R;
-      toHaveAnimatedProps(props: Record<string, unknown>): R;
-    }
-  }
-}
 
 const defaultFramerateConfig = {
   fps: 60,
