@@ -399,6 +399,37 @@ describe('babel plugin', () => {
       expect(code).toMatchSnapshot();
     });
 
+    test('captures a variable named like the stack details variable', () => {
+      const input = html`<script>
+        const _e = 41;
+
+        function f() {
+          'worklet';
+          return _e > 0 ? 1 : 0;
+        }
+      </script>`;
+
+      const { code } = runPlugin(input);
+      expect(code).toContain('f.__closure = [_e]');
+      expect(code).toContain('const _e2 = [new global.Error(), -2, -28]');
+      expect(code).toContain('f.__stackDetails = _e2');
+      expect(code).toMatchSnapshot();
+    });
+
+    test('workletizes a function named like the stack details variable', () => {
+      const input = html`<script>
+        function _e() {
+          'worklet';
+          return 1;
+        }
+      </script>`;
+
+      const { code } = runPlugin(input);
+      expect(code).toContain('const _e2 = [new global.Error(), 1, -28]');
+      expect(code).toContain('_e.__stackDetails = _e2');
+      expect(code).toMatchSnapshot();
+    });
+
     test('implicitly captures globals with strictGlobal disabled', () => {
       const input = html`<script>
         function f() {

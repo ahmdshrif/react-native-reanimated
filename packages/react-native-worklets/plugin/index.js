@@ -1940,15 +1940,18 @@ var require_workletFactory = __commonJS({
         statements.push((0, types_12.expressionStatement)((0, types_12.assignmentExpression)("=", (0, types_12.memberExpression)((0, types_12.identifier)(reactName), (0, types_12.identifier)("__initData"), false), (0, types_12.cloneNode)(initDataId, true))));
       }
       if (!(0, utils_1.isRelease)(state) && !state.opts.bundleMode) {
+        const stackDetailsName = makeStackDetailsName(fun, reactName, closureVariables);
         statements.unshift((0, types_12.variableDeclaration)("const", [
-          (0, types_12.variableDeclarator)((0, types_12.identifier)("_e"), (0, types_12.arrayExpression)([
+          (0, types_12.variableDeclarator)((0, types_12.identifier)(stackDetailsName), (0, types_12.arrayExpression)([
             (0, types_12.newExpression)((0, types_12.memberExpression)((0, types_12.identifier)("global"), (0, types_12.identifier)("Error")), []),
             (0, types_12.numericLiteral)(lineOffset),
-            (0, types_12.numericLiteral)(-27)
-            // the placement of opening bracket after Exception in line that defined '_e' variable
+            // the placement of opening bracket after Exception in line that
+            // defined the stack details variable; a longer variable name moves
+            // the Exception further to the right
+            (0, types_12.numericLiteral)(-27 - (stackDetailsName.length - "_e".length))
           ]))
         ]));
-        statements.push((0, types_12.expressionStatement)((0, types_12.assignmentExpression)("=", (0, types_12.memberExpression)((0, types_12.identifier)(reactName), (0, types_12.identifier)("__stackDetails"), false), (0, types_12.identifier)("_e"))));
+        statements.push((0, types_12.expressionStatement)((0, types_12.assignmentExpression)("=", (0, types_12.memberExpression)((0, types_12.identifier)(reactName), (0, types_12.identifier)("__stackDetails"), false), (0, types_12.identifier)(stackDetailsName))));
       }
       statements.push((0, types_12.returnStatement)((0, types_12.identifier)(reactName)));
       const factoryParams = closureVariables.map((variableId) => {
@@ -1970,6 +1973,16 @@ var require_workletFactory = __commonJS({
       }
       factory.workletized = true;
       return { factory, factoryCallParamPack, workletHash };
+    }
+    function makeStackDetailsName(fun, reactName, closureVariables) {
+      const closureNames = new Set(closureVariables.map((variable) => variable.name.endsWith(types_2.workletClassFactorySuffix) ? variable.name.slice(0, variable.name.length - types_2.workletClassFactorySuffix.length) : variable.name));
+      const programScope = fun.scope.getProgramParent();
+      const isTaken = (name2) => name2 === reactName || closureNames.has(name2) || fun.scope.hasBinding(name2) || programScope.hasGlobal(name2);
+      let name = "_e";
+      for (let i = 2; isTaken(name); i++) {
+        name = `_e${i}`;
+      }
+      return name;
     }
     function hasDirective(path, directiveText) {
       if (!path.node.body) {

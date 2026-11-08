@@ -6,6 +6,7 @@ import type {
   BlockStatement,
   ExpressionStatement,
   FunctionExpression,
+  Identifier,
   ReturnStatement,
   VariableDeclaration,
 } from '@babel/types';
@@ -334,17 +335,25 @@ export function makeWorkletFactory(
   }
 
   if (!isRelease(state) && !state.opts.bundleMode) {
+    const stackDetailsName = makeStackDetailsName(
+      fun,
+      reactName,
+      closureVariables
+    );
     statements.unshift(
       variableDeclaration('const', [
         variableDeclarator(
-          identifier('_e'),
+          identifier(stackDetailsName),
           arrayExpression([
             newExpression(
               memberExpression(identifier('global'), identifier('Error')),
               []
             ),
             numericLiteral(lineOffset),
-            numericLiteral(-27), // the placement of opening bracket after Exception in line that defined '_e' variable
+            // the placement of opening bracket after Exception in line that
+            // defined the stack details variable; a longer variable name moves
+            // the Exception further to the right
+            numericLiteral(-27 - (stackDetailsName.length - '_e'.length)),
           ])
         ),
       ])
@@ -358,7 +367,7 @@ export function makeWorkletFactory(
             identifier('__stackDetails'),
             false
           ),
-          identifier('_e')
+          identifier(stackDetailsName)
         )
       )
     );
@@ -413,6 +422,41 @@ export function makeWorkletFactory(
   factory.workletized = true;
 
   return { factory, factoryCallParamPack, workletHash };
+}
+
+/**
+ * The stack details variable is declared inside the factory, next to the
+ * worklet's own binding and with the captured variables as the factory's
+ * parameters. It must not reuse any of these names, nor shadow a name that the
+ * worklet reads from an outer or global scope.
+ */
+function makeStackDetailsName(
+  fun: NodePath<WorkletizableFunction>,
+  reactName: string,
+  closureVariables: Identifier[]
+): string {
+  const closureNames = new Set(
+    closureVariables.map((variable) =>
+      variable.name.endsWith(workletClassFactorySuffix)
+        ? variable.name.slice(
+            0,
+            variable.name.length - workletClassFactorySuffix.length
+          )
+        : variable.name
+    )
+  );
+  const programScope = fun.scope.getProgramParent();
+  const isTaken = (name: string) =>
+    name === reactName ||
+    closureNames.has(name) ||
+    fun.scope.hasBinding(name) ||
+    programScope.hasGlobal(name);
+
+  let name = '_e';
+  for (let i = 2; isTaken(name); i++) {
+    name = `_e${i}`;
+  }
+  return name;
 }
 
 function hasDirective(

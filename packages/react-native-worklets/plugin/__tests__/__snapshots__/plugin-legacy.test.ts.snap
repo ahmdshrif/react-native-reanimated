@@ -498,6 +498,29 @@ class Foo {
 }"
 `;
 
+exports[`babel plugin for closure capturing captures a variable named like the stack details variable 1`] = `
+"const _e = 41;
+const _worklet_1_init_data = {
+  code: "(function f_null1(){let[_e]=this.__closure;return _e>0?1:0;})",
+  location: "/dev/null",
+  sourceMap: "\\"mock source map\\""
+};
+const f = function f_null1Factory([_worklet_1_init_data, _e]) {
+  const _e2 = [new global.Error(), -2, -28];
+  const f = function () {
+    "use no memo";
+
+    return _e > 0 ? 1 : 0;
+  };
+  f.__closure = [_e];
+  f.__workletHash = 1;
+  f.__pluginVersion = "x.y.z";
+  f.__initData = _worklet_1_init_data;
+  f.__stackDetails = _e2;
+  return f;
+}([_worklet_1_init_data, _e]);"
+`;
+
 exports[`babel plugin for closure capturing captures worklets environment 1`] = `
 "const x = 5;
 const objX = {
@@ -657,6 +680,27 @@ const f = function f_null1Factory([_worklet_1_init_data, globalStuff]) {
   f.__stackDetails = _e;
   return f;
 }([_worklet_1_init_data, globalStuff]);"
+`;
+
+exports[`babel plugin for closure capturing workletizes a function named like the stack details variable 1`] = `
+"const _worklet_1_init_data = {
+  code: "(function _e_null1(){return 1;})",
+  location: "/dev/null",
+  sourceMap: "\\"mock source map\\""
+};
+const _e = function _e_null1Factory([_worklet_1_init_data]) {
+  const _e2 = [new global.Error(), 1, -28];
+  const _e = function () {
+    "use no memo";
+
+    return 1;
+  };
+  _e.__workletHash = 1;
+  _e.__pluginVersion = "x.y.z";
+  _e.__initData = _worklet_1_init_data;
+  _e.__stackDetails = _e2;
+  return _e;
+}([_worklet_1_init_data]);"
 `;
 
 exports[`babel plugin for debugging does inject location for worklets in dev builds 1`] = `
